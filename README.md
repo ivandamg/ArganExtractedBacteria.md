@@ -26,6 +26,12 @@ Analysis of PacBio sequencing on bacteria extracted from root nodules under argo
 
                 for FILE in $(ls *.fastq.gz); do echo $FILE; sbatch --partition=pibu_el8 --job-name=minimap1 --time=0-10:00:00 --mem-per-cpu=50G --ntasks=12 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f2)_minimap.out --error=$(echo $FILE | cut -d'_' -f2)_minimap.error --mail-type=END,FAIL --wrap "module load minimap2/2.20-GCCcore-10.3.0; cd /data/projects/p495_SinorhizobiumMeliloti/50_ArgonExtractedBacteria/02_CleanedReads; minimap2 -ax map-hifi /data/projects/p495_SinorhizobiumMeliloti/50_ArgonExtractedBacteria/00_Ref/FribourgSMeliloti_Prokka.fna $FILE > ../03_MappedReads/$(echo $FILE | cut -d'_' -f1,2)_Fribourg.sam; module load SAMtools;samtools sort -o ../03_MappedReads/$(echo $FILE | cut -d'_' -f1,2)_Fribourg.bam ../03_MappedReads/$(echo $FILE | cut -d'_' -f1,2)_Fribourg.sam; samtools index ../03_MappedReads/$(echo $FILE | cut -d'_' -f1,2)_Fribourg.bam"; done
 
+
+6b. Evaluate coverage with PanDepth
+
+              for FILE in $(ls *Fribourg.bam); do echo $FILE; sbatch --partition=pshort_el8 --job-name=$(echo $FILE | cut -d'_' -f2) --time=0-02:00:00 --mem-per-cpu=64G --ntasks=8 --cpus-per-task=1 --output=$(echo $FILE | cut -d'_' -f2)_pandepth.out --error=$(echo $FILE | cut -d'_' -f2)_pandepth.error --mail-type=END,FAIL --wrap "cd /data/projects/p495_SinorhizobiumMeliloti/50_ArgonExtractedBacteria/03_MappedReads; /data/users/imateusgonzalez/SOFTS/PanDepth-2.26-Linux-x86_64/pandepth -i $FILE -o $(echo $FILE | cut -d'_' -f2)" ; done
+          
+
 7.  Call snp with freebayes
 
 a. Fix bam files with picard AddOrReplaceReadGroups Picard tools
